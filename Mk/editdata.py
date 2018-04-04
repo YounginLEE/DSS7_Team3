@@ -52,6 +52,11 @@ def DD(df, test):
     df = pd.concat([df['VisitNumber'], pd.DataFrame(D_DD)], axis=1)
     test = pd.concat([test['VisitNumber'], pd.DataFrame(T_DD)], axis=1)
 
+    df = df.groupby('VisitNumber').sum()
+    df.reset_index(inplace=True)
+    test = test.groupby('VisitNumber').sum()
+    test.reset_index(inplace=True)
+
     return df, test
 
 
@@ -66,26 +71,32 @@ def editor(df, test):
 
     df1 = df[['VisitNumber', 'TripType','weekday']].groupby('VisitNumber').mean()
     df2 = df[['VisitNumber','refund','purchase']].groupby('VisitNumber').sum()
-
     test1 = test[['VisitNumber', 'weekday']].groupby('VisitNumber').mean()
     test2 = test[['VisitNumber','refund','purchase']].groupby('VisitNumber').sum()
+    df1.reset_index(inplace=True)
+    df2.reset_index(inplace=True)
+    test1.reset_index(inplace=True)
+    test2.reset_index(inplace=True)
 
+    df1 = pd.merge(df1, df2, on='VisitNumber')
+    test1 = pd.merge(test1, test2, on='VisitNumber')
+
+    #bring DepartmentDescription
     df, test = DD(df, test)
-    df = df.groupby('VisitNumber').sum()
-    test = test.groupby('VisitNumber').sum()
 
-    df = pd.concat([df, df1, df2], axis=1)
-    test = pd.concat([test, test1, test2], axis=1)
+    df = pd.merge(df1, df, on='VisitNumber')
+    test = pd.merge(test1, test, on='VisitNumber')
 
     df['weekday'] = df['weekday'].astype('category')  # 카테고리화
     test['weekday'] = test['weekday'].astype('category')
+
+    # df.dropna(how='any', inplace=True)
+    # df.reset_index(drop=True, inplace=True)
 
     return df, test
 
 df = pd.read_csv("../data/train_v1.csv")
 test = pd.read_csv("test.csv")
-
 df, test = editor(df, test)
-
-df.to_csv('edited_train.csv')
-test.to_csv('edited_test.csv')
+df.to_csv('edited_train.csv', index=False)
+test.to_csv('edited_test.csv', index=False)
