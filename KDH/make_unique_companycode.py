@@ -1,3 +1,5 @@
+import pandas as pd
+
 train = pd.read_csv('../data/train_v1.csv')
 train['FinelineNumber'] = train['FinelineNumber'].astype(int)
 
@@ -5,11 +7,11 @@ test = pd.read_csv('../data/test_v1.csv')
 test = test.fillna(value = 9999)
 test['FinelineNumber'] = test['FinelineNumber'].astype(int)
 
-type_list = list(df['TripType'].unique())
-type_list.sort()
-
 df = train[['TripType','VisitNumber', 'company_code']]
 df_ = test[['VisitNumber', 'company_code']]
+
+type_list = list(df['TripType'].unique())
+type_list.sort()
 
 def get_company_set(df, type_list):
 
@@ -39,7 +41,7 @@ def get_type_company_unique(set_list,type_list):
         unique_list.append(tmp_unique)
     return unique_list
 
-company_unique_list = get_type_fineline_unique(company_set_list, type_list)
+company_unique_list = get_type_company_unique(company_set_list, type_list)
 
 def get_unique_com_columns(df, unique_list):
 
@@ -65,3 +67,6 @@ for i in company_unique_list:
 
 train_c = get_unique_com_columns(train, c_unique_list)
 test_c = get_unique_com_columns(test, c_unique_list)
+
+train_c.to_csv('../data/unique_com.csv', index = False)
+test_c.to_csv('../data/t_unique_com.csv', index = False)
